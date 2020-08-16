@@ -99,11 +99,11 @@ let rec apply
               failwith "| :[hole] is invalid. Maybe you meant to put quotes")
       in
       Option.value_map result ~f:ident ~default:(false, Some env)
-    | Match (String template, _language, cases) ->
+    | Match (String template, language, cases) ->
       let source, _ = Rewriter.Rewrite_template.substitute template env in
       let fresh_var = Uuid_unix.(Fn.compose Uuid.to_string create ()) in
       let env = Environment.add env fresh_var source in
-      rule_match env (Match (Variable fresh_var, _language, cases))
+      rule_match env (Match (Variable fresh_var, language, cases))
     | RewriteTemplate rewrite_template ->
       begin
         match rewrite_context with
