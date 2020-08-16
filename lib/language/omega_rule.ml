@@ -205,15 +205,15 @@ let create rule =
             spaces *> sep_by (char ',') expression_parser <* spaces |>> fun consequent ->
             antecedent, consequent
           in
-          let pattern keyword =
-            string keyword *> spaces *> atom_parser <* spaces <* char '{' <* spaces
-            >>= fun atom ->
-            many1 case_parser
-            <* char '}' <* spaces
-            >>= fun cases -> return (atom, cases)
-          in
-          pattern Syntax.start_match_pattern |>> fun (atom, cases) ->
-          Match (atom, None, cases)
+          string Syntax.start_match_pattern *> spaces *> atom_parser <* spaces
+          >>= fun atom ->
+          option None (string "as" *> spaces *> value_parser <* spaces |>> Option.some)
+          >>= fun language ->
+          char '{' *> spaces *>
+          many1 case_parser
+          <* char '}' <* spaces
+          |>> fun cases ->
+          Match (atom, language, cases)
         in
         let rewrite_pattern_parser =
           string Syntax.start_rewrite_pattern *> spaces *> atom_parser <* spaces <* char '{' <* spaces
