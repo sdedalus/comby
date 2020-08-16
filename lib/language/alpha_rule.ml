@@ -68,7 +68,7 @@ let rec apply
     | Not_equal (left, right) ->
       let sat, env = rule_match env (Equal (left, right)) in
       not sat, env
-    | Match (Variable variable, cases) ->
+    | Match (Variable variable, _language, cases) ->
       let result =
         Environment.lookup env variable >>= fun source ->
         List.find_map cases ~f:(fun (template, case_expression) ->
@@ -97,11 +97,11 @@ let rec apply
               failwith "| :[hole] is invalid. Maybe you meant to put quotes")
       in
       Option.value_map result ~f:ident ~default:(false, Some env)
-    | Match (String template, cases) ->
+    | Match (String template, _language, cases) ->
       let source, _ = Rewriter.Rewrite_template.substitute template env in
       let fresh_var = Uuid_unix.(Fn.compose Uuid.to_string create ()) in
       let env = Environment.add env fresh_var source in
-      rule_match env (Match (Variable fresh_var, cases))
+      rule_match env (Match (Variable fresh_var, _language, cases))
     | RewriteTemplate rewrite_template ->
       begin
         match rewrite_context with
@@ -207,7 +207,7 @@ let create rule =
         >>= fun cases -> return (atom, cases)
       in
       pattern Syntax.start_match_pattern |>> fun (atom, cases) ->
-      Match (atom, cases)
+      Match (atom, None, cases)
     in
     match_pattern s
   and rewrite_pattern_parser s =
